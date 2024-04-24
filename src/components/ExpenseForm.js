@@ -1,130 +1,148 @@
-import React, { useState } from "react";
-import "../../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import "./Expense.css"
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
+import './Expense.css'; // Import your custom CSS file
 
-const ExpenseForm = ({ onAddExpense }) => {
-  const [date, setDate] = useState("");
-  const [amount, setAmount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [description, setDescription] = useState("");
-  const [salary, setSalary] = useState(""); // New state for salary input
-  const [formValid, setFormValid] = useState(true);
+const ExpenseTracker = () => {
+  // Define options for months
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
+  // State to store expenses for each month, including salary
+  const [expenses, setExpenses] = useState({});
+
+  // State to store user input for new expense, including salary
+  const [newExpense, setNewExpense] = useState({
+    month: '',
+    date: '',
+    amount: '',
+    category: '',
+    description: '',
+    salary: ''
+  });
+
+  // Function to handle user input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewExpense({ ...newExpense, [name]: value });
+  };
+
+  // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
-  
-    if (!date || !amount || !selectedCategory || !description || !salary) {
-      setFormValid(false);
-      return;
-    }
-  
-    const expense = {
-      id: Math.random(),
-      date,
-      amount,
-      selectedCategory,
-      description,
-      salary, // Include salary in expense object
-    };
-  
-    onAddExpense(expense);
-  
-    setDate("");
-    setAmount("");
-    setSelectedCategory("");
-    setDescription("");
-    // setSalary(""); // Clear salary input value
-    setFormValid(true);
+    const { month, date, amount, category, description, salary } = newExpense;
+    
+    // Check if the month exists in expenses, if not, create an empty array
+    setExpenses(prevExpenses => ({
+      ...prevExpenses,
+      [month]: {
+        expenses: [...(prevExpenses[month]?.expenses || []), { date, amount, category, description }],
+        salary: salary || prevExpenses[month]?.salary // If salary is not provided, use previous salary value
+      }
+    }));
+    
+    // Clear the form after submission
+    setNewExpense({
+      month: '',
+      date: '',
+      amount: '',
+      category: '',
+      description: '',
+      salary: ''
+    });
   };
-  
+
+  // Function to handle month change
+  const handleMonthChange = (e) => {
+    const { value } = e.target;
+    // Set the salary input field value based on the selected month's salary
+    setNewExpense({ ...newExpense, month: value, salary: expenses[value]?.salary || '' });
+  };
+
+  // Function to calculate savings for each month
+  const calculateSavings = (monthExpenses, salary) => {
+    const totalExpenses = monthExpenses.reduce((total, expense) => total + parseFloat(expense.amount), 0);
+    return isNaN(salary) ? '-' : (salary - totalExpenses).toFixed(2);
+  };
+
+  // Function to calculate total savings
+  const calculateTotalSavings = () => {
+    let total = 0;
+    Object.values(expenses).forEach(({ expenses, salary }) => {
+      const totalExpenses = expenses.reduce((total, expense) => total + parseFloat(expense.amount), 0);
+      total += isNaN(salary) ? 0 : salary - totalExpenses;
+    });
+    return total.toFixed(2);
+  };
 
   return (
-    <div className="gradient-background">
-    <div className="container mt-5 ">
-      <h2 className="text-center mb-4">Expense Tracker</h2>
+    <div className="container">
+      <h2 className="mt-4 mb-3">Expense Tracker</h2>
       <form onSubmit={handleSubmit}>
-      <div className="mb-3">
-          <label htmlFor="salary" className="form-label">
-            Enter your Monthly salary:
-          </label>
-          <input
-            onChange={(e) => {
-              setSalary(e.target.value);
-            }}
-            value={salary}
-            type="number"
-            min={1}
-            className="form-control"
-            id="salary"
-          />
-        </div>
         <div className="mb-3">
-          <label htmlFor="date" className="form-label">
-            Date of Purchase:
-          </label>
-          <input
-            onChange={(e) => setDate(e.target.value)}
-            value={date}
-            type="date"
-            className="form-control"
-            id="date"
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="amount" className="form-label">
-            Amount:
-          </label>
-          <input
-            onChange={(e) => setAmount(e.target.value)}
-            value={amount}
-            type="number"
-            min={1}
-            className="form-control"
-            id="amount"
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="category" className="form-label">
-            Category:
-          </label>
-          <select
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            value={selectedCategory}
-            className="form-control"
-            id="category"
-          >
-            <option value="">Select a category</option>
-            <option value="Bills & Utilities">Bills & Utilities</option>
-            <option value="Dining">Dining</option>
-            <option value="Retail Purchase">Retail Purchase</option>
-            <option value="Entertainment">Entertainment</option>
-            <option value="Travel">Travel</option>
-            <option value="Other">Other</option>
+          <select className="form-select" name="month" value={newExpense.month} onChange={handleMonthChange}>
+            <option value="">Select Month</option>
+            {months.map((month, index) => (
+              <option key={index} value={month}>{month}</option>
+            ))}
           </select>
         </div>
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">
-            Description:
-          </label>
-          <input
-            onChange={(e) => setDescription(e.target.value)}
-            value={description}
-            type="text"
-            placeholder="Enter description..."
-            className="form-control"
-            id="description"
-          />
+          <input type="date" className="form-control" name="date" value={newExpense.date} onChange={handleInputChange} placeholder="Date" />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">
-          Submit
-        </button>
-        {!formValid && (
-          <p className="alert alert-danger mt-3">Please fill out all fields.</p>
-        )}
+        <div className="mb-3">
+          <input type="number" className="form-control" name="salary" value={newExpense.salary} onChange={handleInputChange} placeholder="Salary" />
+        </div>
+        <div className="mb-3">
+          <input type="number" className="form-control" name="amount" value={newExpense.amount} onChange={handleInputChange} placeholder="Amount" />
+        </div>
+        <div className="mb-3">
+          <input type="text" className="form-control" name="category" value={newExpense.category} onChange={handleInputChange} placeholder="Category" />
+        </div>
+        <div className="mb-3">
+          <input type="text" className="form-control" name="description" value={newExpense.description} onChange={handleInputChange} placeholder="Description" />
+        </div>
+        
+        <button type="submit" className="btn btn-primary">Add Expense</button>
       </form>
-    </div>
+      
+      {/* Display expenses for each month */}
+      {Object.entries(expenses).map(([month, { expenses: monthExpenses, salary }]) => (
+        <div key={month}>
+          <h3 className="mt-5">{month}</h3>
+          <p>Salary: {isNaN(salary) ? '-' : salary}</p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {monthExpenses.map((expense, index) => (
+                <tr key={index}>
+                  <td>{expense.date}</td>
+                  <td>{expense.amount}</td>
+                  <td>{expense.category}</td>
+                  <td>{expense.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p>Savings: {calculateSavings(monthExpenses, salary)}</p>
+        </div>
+      ))}
+      
+      {/* Display total savings */}
+      <div>
+        <h3 className="mt-5">Total Savings</h3>
+        <p>{calculateTotalSavings()}</p>
+      </div>
     </div>
   );
 };
 
-export default ExpenseForm;
+export default ExpenseTracker;

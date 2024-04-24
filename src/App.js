@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import ExpenseForm from './components/ExpenseForm';
-import ExpenseTable from './components/ExpenseTable';
+// import ExpenseTable from './components/ExpenseTable';
 
 function App() {
   const [expenseData, setExpenseData] = useState([]);
@@ -37,7 +37,7 @@ function App() {
   return (
     <div className="App">
       <ExpenseForm onAddExpense={addExpense} onSetSalary={handleSetSalary} />
-      <ExpenseTable expenseData={expenseData} onDeleteExpense={deleteExpense} salary={salary} />
+      {/* <ExpenseTable expenseData={expenseData} onDeleteExpense={deleteExpense} salary={salary} /> */}
     </div>
   );
 }
