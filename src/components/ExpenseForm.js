@@ -93,19 +93,19 @@ const ExpenseTracker = () => {
           </select>
         </div>
         <div className="mb-3">
-          <input type="date" className="form-control" name="date" value={newExpense.date} onChange={handleInputChange} placeholder="Date" />
+          <input type="date" className="form-control" name="date" value={newExpense.date} onChange={handleInputChange} placeholder="Date"  required/>
         </div>
         <div className="mb-3">
-          <input type="number" className="form-control" name="salary" value={newExpense.salary} onChange={handleInputChange} placeholder="Salary" />
+          <input type="number" className="form-control" name="salary" value={newExpense.salary} onChange={handleInputChange} placeholder="Salary" required/>
         </div>
         <div className="mb-3">
-          <input type="number" className="form-control" name="amount" value={newExpense.amount} onChange={handleInputChange} placeholder="Amount" />
+          <input type="number" className="form-control" name="amount" value={newExpense.amount} onChange={handleInputChange} placeholder="Amount" required/>
         </div>
         <div className="mb-3">
-          <input type="text" className="form-control" name="category" value={newExpense.category} onChange={handleInputChange} placeholder="Category" />
+          <input type="text" className="form-control" name="category" value={newExpense.category} onChange={handleInputChange} placeholder="Category" required/>
         </div>
         <div className="mb-3">
-          <input type="text" className="form-control" name="description" value={newExpense.description} onChange={handleInputChange} placeholder="Description" />
+          <input type="text" className="form-control" name="description" value={newExpense.description} onChange={handleInputChange} placeholder="Description" required/>
         </div>
         
         <button type="submit" className="btn btn-primary">Add Expense</button>
