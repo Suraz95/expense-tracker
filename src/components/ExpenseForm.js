@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
-import './Expense.css'; // Import your custom CSS file
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './Expense.css';
 
 const ExpenseTracker = () => {
-  // Define options for months
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // State to store expenses for each month, including salary
   const [expenses, setExpenses] = useState({});
 
-  // State to store user input for new expense, including salary
   const [newExpense, setNewExpense] = useState({
     month: '',
     date: '',
@@ -22,27 +19,31 @@ const ExpenseTracker = () => {
     salary: ''
   });
 
-  // Function to handle user input change
+  useEffect(() => {
+    const storedExpenses = JSON.parse(localStorage.getItem('expenses')) || {};
+    setExpenses(storedExpenses);
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewExpense({ ...newExpense, [name]: value });
   };
 
-  // Function to handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     const { month, date, amount, category, description, salary } = newExpense;
     
-    // Check if the month exists in expenses, if not, create an empty array
-    setExpenses(prevExpenses => ({
-      ...prevExpenses,
+    const newExpenses = {
+      ...expenses,
       [month]: {
-        expenses: [...(prevExpenses[month]?.expenses || []), { date, amount, category, description }],
-        salary: salary || prevExpenses[month]?.salary // If salary is not provided, use previous salary value
+        expenses: [...(expenses[month]?.expenses || []), { date, amount, category, description }],
+        salary: salary || expenses[month]?.salary
       }
-    }));
+    };
+
+    localStorage.setItem('expenses', JSON.stringify(newExpenses));
+    setExpenses(newExpenses);
     
-    // Clear the form after submission
     setNewExpense({
       month: '',
       date: '',
@@ -53,20 +54,23 @@ const ExpenseTracker = () => {
     });
   };
 
-  // Function to handle month change
   const handleMonthChange = (e) => {
     const { value } = e.target;
-    // Set the salary input field value based on the selected month's salary
     setNewExpense({ ...newExpense, month: value, salary: expenses[value]?.salary || '' });
   };
 
-  // Function to calculate savings for each month
+  const handleDeleteExpense = (month, index) => {
+    const updatedExpenses = { ...expenses };
+    updatedExpenses[month].expenses.splice(index, 1);
+    localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
+    setExpenses(updatedExpenses);
+  };
+
   const calculateSavings = (monthExpenses, salary) => {
     const totalExpenses = monthExpenses.reduce((total, expense) => total + parseFloat(expense.amount), 0);
     return isNaN(salary) ? '-' : (salary - totalExpenses).toFixed(2);
   };
 
-  // Function to calculate total savings
   const calculateTotalSavings = () => {
     let total = 0;
     Object.values(expenses).forEach(({ expenses, salary }) => {
@@ -107,7 +111,6 @@ const ExpenseTracker = () => {
         <button type="submit" className="btn btn-primary">Add Expense</button>
       </form>
       
-      {/* Display expenses for each month */}
       {Object.entries(expenses).map(([month, { expenses: monthExpenses, salary }]) => (
         <div key={month}>
           <h3 className="mt-5">{month}</h3>
@@ -119,6 +122,7 @@ const ExpenseTracker = () => {
                 <th>Amount</th>
                 <th>Category</th>
                 <th>Description</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -128,6 +132,9 @@ const ExpenseTracker = () => {
                   <td>{expense.amount}</td>
                   <td>{expense.category}</td>
                   <td>{expense.description}</td>
+                  <td>
+                    <button className="btn btn-danger" onClick={() => handleDeleteExpense(month, index)}>Delete</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -136,7 +143,6 @@ const ExpenseTracker = () => {
         </div>
       ))}
       
-      {/* Display total savings */}
       <div>
         <h3 className="mt-5">Total Savings</h3>
         <p>{calculateTotalSavings()}</p>
